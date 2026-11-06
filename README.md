@@ -28,36 +28,51 @@ git checkout LetsRPMap && git merge weirdgloop/REL1_45
 
 * Maps use **GTA world coordinates**: one map unit is one metre, `x` runs east and `y`
   runs north, the same numbers players see in game.
-* The map pictures are plain image **tiles** in a folder on the wiki's own server
-  (`/tiles/`); no tile server or other service is needed.
-* `/tiles/basemaps.json` lists the maps (normally just one, Los Santos).
+* The map pictures are an ordinary web-map tile set (256 px tiles, zoom 0 = the whole
+  map in one tile), used **unchanged**, in a folder on the wiki's own server (`/tiles/`).
+  No tile server or other service is needed.
+* Four numbers, `transformation`, line the tiles up with GTA coordinates. Weird Gloop's
+  version only takes tiles cut in RuneScape's own layout; this fork adds `transformation`,
+  `worldBounds`, `minZoom` and `maxZoom` settings so it can use standard tile sets.
+* `/tiles/basemaps.json` lists the maps (normally just one, Los Santos);
+  `tools/basemaps.json` is ready to use.
 
-### Tiles
+### The Let's RP tiles
 
-Tiles are 256 px. At zoom `z` a tile covers `256 / 2^z` metres, and is saved as
+Road-map style JPEGs named `{z}_{x}_{y}.jpg` (e.g. `7_71_88.jpg`), zoom 0 to 7, all in one
+folder. Zoom 7 is about 1.6 pixels per metre.
+
+### Calibration
+
+`transformation` is `[a, b, c, d]`: a tile pixel for GTA position (x, y) at zoom z is
+`((a * x + b) * 2^z, (c * y + d) * 2^z)`. The defaults,
 
 ```
-tiles/{mapID}/{z}/{plane}_{x}_{y}.png
+[ 0.0125265, 121.43, -0.0125265, 155.2606 ]
 ```
 
-`tools/` makes them:
+were fitted to in-game readings at five landmarks (port pier corners, Paleto Bay tip, a
+north-west pier and the Fort Zancudo runway end). Every landmark lands within 10-20 m. To
+make it more exact, take more in-game readings at sharp corners, find the same points on
+zoom 6 or 7 tiles, and refit; only these four numbers change, never the tiles or the
+coordinates written in articles.
 
-* `stitch_xyz.py`: joins one zoom level of an ordinary web-map tile set (`{z}/{x}/{y}.png` folders, or flat files like `7_71_88.jpg` with `--pattern "{z}_{x}_{y}.jpg"`)
-  into one big picture.
-* `cut_tiles.py`: cuts a big picture into tiles in our layout and writes `basemaps.json`.
-  It needs the GTA coordinates of the picture's four edges.
-* `stand_in_tiles.py`: makes a labelled test grid, for trying things out without a map.
+### Other tile sets
 
-**Lining up the coordinates:** find two places that are easy to spot on the picture and
-whose GTA coordinates you know (e.g. the end of an airport runway and a pier). From each
-place's pixel position and its coordinates, work out the metres per pixel and so the
-coordinates of the picture's edges. Cut a low zoom first, check a few places on the map
-with `<mapframe>`, and adjust.
+`tools/` also has scripts for tile sets in other layouts:
+
+* `stitch_xyz.py`: joins one zoom level of a tile set (`{z}/{x}/{y}.png` folders, or flat
+  files with e.g. `--pattern "{z}_{x}_{y}.jpg"`) into one picture.
+* `cut_tiles.py`: cuts a big picture into tiles in the RuneScape layout
+  (`{mapID}/{z}/{plane}_{x}_{y}.png`, one unit = one metre at zoom 0), for use without
+  `transformation`.
+* `stand_in_tiles.py`: makes a labelled test grid in that layout.
 
 ## Installing on the wiki (no shell needed)
 
 1. Download this repository's `LetsRPMap` branch and upload it to `extensions/Kartographer/`.
-2. Upload the cut tiles and `basemaps.json` to a `tiles/` folder next to `index.php`.
+2. Upload the tile set, unchanged, to a `tiles/` folder next to `index.php`, plus
+   `tools/basemaps.json`.
 3. Add to `LocalSettings.php` (see `tools/LocalSettings.example.php` to change anything):
    ```php
    wfLoadExtension( 'Kartographer' );
@@ -96,5 +111,7 @@ Coordinates in the pin data are `[ x, y ]`. Pins, lines and areas use
 ## Changes from Weird Gloop's version
 
 * Default settings point at the wiki's own `/tiles/` folder instead of RuneScape's map server.
+* New settings `transformation`, `worldBounds`, `minZoom` and `maxZoom` (`modules/box/Map.js`),
+  so a standard tile set can be used with game coordinates. Without them it works as before.
 * English messages and the map picker say Let's RP / Los Santos instead of RuneScape.
-* `tools/` for making tiles in GTA coordinates.
+* `tools/`: calibration-ready `basemaps.json`, settings example, and scripts for other tile layouts.

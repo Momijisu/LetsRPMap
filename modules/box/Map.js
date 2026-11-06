@@ -14,7 +14,23 @@ var OpenFullScreenControl = require( './openfullscreen_control.js' ),
 	DataManager = require( './data.js' ),
 	MapTileLayer = require('./MapTileLayer.js'),
 	controls = require('ext.kartographer.controls'),
-	worldLatLng = new L.LatLngBounds([0, 0], [128000, 128000]),
+	// Let's RP: the map can be set up from wgKartographerDataConfig (see README):
+	// worldBounds [[minX, minY], [maxX, maxY]] in map units, minZoom/maxZoom, and
+	// transformation [a, b, c, d] for ordinary {z}/{x}/{y} tile sets, where a tile
+	// pixel at zoom z is ((a * x + b) * 2^z, (c * y + d) * 2^z).
+	rsDataConfig = mw.config.get( 'wgKartographerDataConfig' ) || {},
+	rsWorld = rsDataConfig.worldBounds || [ [ 0, 0 ], [ 128000, 128000 ] ],
+	worldLatLng = new L.LatLngBounds( [ rsWorld[ 0 ][ 1 ], rsWorld[ 0 ][ 0 ] ], [ rsWorld[ 1 ][ 1 ], rsWorld[ 1 ][ 0 ] ] ),
+	rsCRS = Array.isArray( rsDataConfig.transformation ) && rsDataConfig.transformation.length === 4 ?
+		L.extend( {}, L.CRS.Simple, {
+			transformation: new L.Transformation(
+				rsDataConfig.transformation[ 0 ], rsDataConfig.transformation[ 1 ],
+				rsDataConfig.transformation[ 2 ], rsDataConfig.transformation[ 3 ] ),
+			infinite: false
+		} ) :
+		L.CRS.Simple,
+	rsMinZoom = typeof rsDataConfig.minZoom === 'number' ? rsDataConfig.minZoom : -3,
+	rsMaxZoom = typeof rsDataConfig.maxZoom === 'number' ? rsDataConfig.maxZoom : 5,
 	KartographerMap,
 	precisionPerZoom = [ 0, 0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5 ],
 	inlineDataLayerKey = 'kartographer-inline-data-layer',
@@ -37,15 +53,12 @@ L.Map.mergeOptions( {
 	// the default zoom applied when `longitude` and `latitude` were
 	// specified, but zoom was not.
 	fallbackZoom: 1,
- 	crs: L.CRS.Simple,
- 	maxBounds: [
- 	    [0, 0],
- 	    [128000, 128000]
- 	],
+ 	crs: rsCRS,
+ 	maxBounds: worldLatLng,
  	attributionControl: false,
  	fullscreen: false,
- 	maxZoom: 5,
- 	minZoom: -3,
+ 	maxZoom: rsMaxZoom,
+ 	minZoom: rsMinZoom,
  	zoomControl: false // Replace default zoom controls with our own
 } );
 
@@ -1079,8 +1092,8 @@ KartographerMap = KartographerMap.extend({
           baseUrl + this.config.tileURLFormat, {
           tileSize: this.config.tileSize || 256,
           bounds: bounds,
-          minZoom: -3,
-          maxZoom: 5,
+          minZoom: rsMinZoom,
+          maxZoom: rsMaxZoom,
           maxNativeZoom: this.config.maxNativeZoom || 3,
           mapID: mapId,
           mapVersion: this._mapVersion,

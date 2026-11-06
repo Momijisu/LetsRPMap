@@ -1,0 +1,9 @@
+[
+	{
+		"mapId": 0,
+		"name": "Los Santos",
+		"bounds": [ [ -4500, -4300 ], [ 5000, 8000 ] ],
+		"center": [ 0, 1500 ],
+		"defaultPlane": 0
+	}
+]

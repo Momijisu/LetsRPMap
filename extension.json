@@ -1,5 +1,4 @@
 {
-
 	"name": "Kartographer",
 	"author": [
 		"Yuri Astrakhan",
@@ -443,16 +442,34 @@
 			"value": null
 		},
 		"KartographerDataConfig": {
-			"description": "Where the map tiles and the list of maps come from. Defaults for the Let's RP Wiki: tiles in a /tiles/ folder on the wiki's own server. See README.md.",
+			"description": "Where the map tiles and the list of maps come from. Defaults for the Let's RP Wiki: ordinary {z}_{x}_{y}.jpg tiles in /tiles/ on the wiki's own server, lined up with GTA world coordinates by `transformation`. See README.md.",
 			"value": {
 				"baseTileURL": "/tiles/",
 				"basePlainTileURL": "/tiles/",
-				"tileURLFormat": "{mapID}/{z}/{p}_{x}_{-y}.png",
+				"tileURLFormat": "{z}_{x}_{y}.jpg",
 				"attribution": "Let's RP Wiki",
 				"baseMapsFile": "/tiles/basemaps.json",
 				"wikiImageURL": "/images/",
 				"mapVersion": "1",
-				"maxNativeZoom": 3,
+				"transformation": [
+					0.0125265,
+					121.43,
+					-0.0125265,
+					155.2606
+				],
+				"worldBounds": [
+					[
+						-9694,
+						-8042
+					],
+					[
+						10743,
+						12395
+					]
+				],
+				"minZoom": 0,
+				"maxZoom": 8,
+				"maxNativeZoom": 7,
 				"tileSize": 256
 			}
 		}
