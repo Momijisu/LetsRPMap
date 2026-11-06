@@ -442,11 +442,21 @@
 			"value": null
 		},
 		"KartographerDataConfig": {
-			"description": "Where the map tiles and the list of maps come from. Defaults for the Let's RP Wiki: ordinary {z}_{x}_{y}.jpg tiles in /tiles/ on the wiki's own server, lined up with GTA world coordinates by `transformation`. See README.md.",
+			"description": "Where the map tiles and the list of maps come from. Defaults for the Let's RP Wiki: ordinary {z}_{x}_{y}.jpg tile sets (Atlas and Satellite) in /tiles/atlas/ and /tiles/satellite/ on the wiki's own server, lined up with GTA world coordinates by `transformation`. See README.md.",
 			"value": {
-				"baseTileURL": "/tiles/",
-				"basePlainTileURL": "/tiles/",
+				"baseTileURL": "/tiles/atlas/",
+				"basePlainTileURL": "/tiles/atlas/",
 				"tileURLFormat": "{z}_{x}_{y}.jpg",
+				"tileLayers": [
+					{
+						"name": "Atlas",
+						"url": "/tiles/atlas/"
+					},
+					{
+						"name": "Satellite",
+						"url": "/tiles/satellite/"
+					}
+				],
 				"attribution": "Let's RP Wiki",
 				"baseMapsFile": "/tiles/basemaps.json",
 				"wikiImageURL": "/images/",
@@ -470,7 +480,9 @@
 				"minZoom": 0,
 				"maxZoom": 8,
 				"maxNativeZoom": 7,
-				"tileSize": 256
+				"tileSize": 256,
+				"planes": false,
+				"mapSelect": false
 			}
 		}
 	},

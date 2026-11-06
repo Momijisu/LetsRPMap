@@ -178,3 +178,71 @@
 		opacity: @opacity-base;
 	}
 }
+
+// Let's RP: pop-ups and labels are white boxes, so keep their text dark even when
+// the skin's text is light (e.g. Citizen's dark mode).
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip,
+.leaflet-tooltip {
+	color: #202122;
+}
+
+// Let's RP: map buttons are always light with dark icons, so they stay visible
+// over the map whatever the skin's colours (Citizen's dark mode made them dark
+// grey with black icons).
+.leaflet-container {
+	.leaflet-bar a,
+	.leaflet-bar button,
+	.leaflet-bar .oo-ui-buttonElement-button,
+	.leaflet-control-zoom-level,
+	.leaflet-control-static a {
+		background-color: #fff;
+		color: #202122;
+		border-color: #c8ccd1;
+	}
+
+	.leaflet-bar a:hover,
+	.leaflet-bar button:hover,
+	.leaflet-control-static a:hover {
+		background-color: #eaecf0;
+		color: #202122;
+	}
+
+	.leaflet-bar a.leaflet-disabled {
+		background-color: #f8f9fa;
+		color: #a2a9b1;
+	}
+
+	.leaflet-bar {
+		border-color: #a2a9b1;
+		box-shadow: 0 1px 4px rgba( 0, 0, 0, 0.3 );
+	}
+
+	// Tile set switch: Atlas | Satellite
+	.leaflet-control-tilelayers {
+		display: flex;
+		overflow: hidden;
+	}
+
+	.leaflet-control-tilelayers a.leaflet-control-tilelayers-button {
+		width: auto;
+		height: auto;
+		padding: 4px 10px;
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 18px;
+		text-decoration: none;
+		border-bottom: 0;
+		border-right: 1px solid #c8ccd1;
+	}
+
+	.leaflet-control-tilelayers a.leaflet-control-tilelayers-button:last-child {
+		border-right: 0;
+	}
+
+	.leaflet-control-tilelayers a.leaflet-control-tilelayers-active,
+	.leaflet-control-tilelayers a.leaflet-control-tilelayers-active:hover {
+		background-color: #36c;
+		color: #fff;
+	}
+}

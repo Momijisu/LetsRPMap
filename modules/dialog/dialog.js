@@ -112,8 +112,12 @@ MapDialog.prototype.addFooterButton = function () {
 		$inlineContainer = $( '<div>' )
 			.addClass( 'mw-kartographer-inlinefoot' );
 	}
+	// Let's RP: the "External maps" button only when a standalone map site is set
+	if ( ( mw.config.get( 'wgKartographerDataConfig' ) || {} ).standaloneURL ) {
+		$buttonContainer.append( dialog.mapDetailsButton.$element );
+	}
 	$inlineContainer.append(
-		$buttonContainer.append( dialog.mapDetailsButton.$element ),
+		$buttonContainer,
 		dialog.$captionContainer
 	);
 

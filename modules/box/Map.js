@@ -39,6 +39,37 @@ var OpenFullScreenControl = require( './openfullscreen_control.js' ),
 require( './leaflet.sleep.js' );
 require( './enablePreview.js' );
 
+// Let's RP: a row of buttons to switch tile sets (Atlas | Satellite)
+var TileLayerSwitch = L.Control.extend({
+	options: { position: 'bottomleft', sets: [], active: 0 },
+	onAdd: function (map) {
+		var control = this,
+			bar = L.DomUtil.create('div', 'leaflet-bar leaflet-control-tilelayers');
+		L.DomEvent.disableClickPropagation(bar);
+		this._buttons = this.options.sets.map(function (set, i) {
+			var a = L.DomUtil.create('a', 'leaflet-control-tilelayers-button', bar);
+			a.href = '#';
+			a.role = 'button';
+			a.textContent = set.name;
+			a.title = set.name;
+			L.DomEvent.on(a, 'click', function (e) {
+				L.DomEvent.preventDefault(e);
+				map.setTileLayer(i);
+				control._select(i);
+			});
+			return a;
+		});
+		this._select(this.options.active);
+		return bar;
+	},
+	_select: function (i) {
+		this._buttons.forEach(function (a, j) {
+			a.classList.toggle('leaflet-control-tilelayers-active', i === j);
+			a.setAttribute('aria-pressed', i === j ? 'true' : 'false');
+		});
+	}
+});
+
 L.CRS.Simple.infinite = false;
 L.CRS.Simple.projection.bounds = new L.Bounds([
     [-12800, -12800],
@@ -549,7 +580,10 @@ KartographerMap = L.Map.extend( {
 	            }
 	        };
 	        layer = L.mapbox.featureLayer( geoJson, $.extend( {}, dataLayerOpts, options ) ).setFilter(function(feature){
-	            return (feature.properties.mapID == map._mapID) && (feature.properties.plane == map._plane)
+	            // Let's RP: features without a mapID or plane belong to the map they're drawn on
+            var props = feature.properties || {};
+            return (props.mapID === undefined || props.mapID == map._mapID) &&
+                (props.plane === undefined || props.plane == map._plane)
 	        }).addTo( this );
 	        layer.getAttribution = function () {
 	            return this.options.attribution;
@@ -968,6 +1002,10 @@ KartographerMap = KartographerMap.extend({
     rsMapInitialize: function(options, controls) {
         this._controllers = {};
         this.config = mw.config.get('wgKartographerDataConfig');
+        // Let's RP: pin pictures ship with the extension (images/pins/) unless iconURL is set
+        if (!this.config.iconURL) {
+            this.config.iconURL = mw.config.get('wgExtensionAssetsPath') + '/Kartographer/images/pins/';
+        }
         var mesVers = mw.message('kartographer-map-version');
         if (mesVers.exists()) {
             // Backup to be safe
@@ -1037,7 +1075,7 @@ KartographerMap = KartographerMap.extend({
           baseMaps[data[i].mapId] = data[i];
         }
         this._baseMaps = baseMaps;
-        if (this.fullscreen) {
+        if (this.fullscreen && this._controllers.mapSelect) {
           this._controllers.mapSelect._resetSelect(baseMaps);
         }
     },
@@ -1059,7 +1097,7 @@ KartographerMap = KartographerMap.extend({
         if (plane === undefined) {
           plane = this._baseMaps[mapID].defaultPlane || 0
         }
-        if (this.fullscreen) {
+        if (this.fullscreen && this._controllers.mapSelect && this._controllers.plane) {
           this._controllers.mapSelect._changeSelectedOption(mapID)
           this._controllers.plane.setPlane(plane)
         } else {
@@ -1084,22 +1122,59 @@ KartographerMap = KartographerMap.extend({
 
         let data = this._baseMaps[mapId] || {}
         let bounds = this._translateBounds(data.bounds)
-        let baseUrl = this.config.baseTileURL
-        if (this._plainTiles && this.config.basePlainTileURL) {
+        let map = this
+        let makeLayer = function (baseUrl) {
+          return new MapTileLayer(
+            baseUrl + map.config.tileURLFormat, {
+            tileSize: map.config.tileSize || 256,
+            bounds: bounds,
+            minZoom: rsMinZoom,
+            maxZoom: rsMaxZoom,
+            maxNativeZoom: map.config.maxNativeZoom || 3,
+            mapID: mapId,
+            mapVersion: map._mapVersion,
+          });
+        };
+        // Let's RP: several tile sets (e.g. Atlas and Satellite) with a switch
+        let sets = Array.isArray(this.config.tileLayers) ? this.config.tileLayers.filter(function (t) {
+          return t && t.url;
+        }) : [];
+        if (sets.length > 1) {
+          let chosen = 0;
+          try {
+            let saved = window.localStorage.getItem('kartographer-tile-layer');
+            sets.forEach(function (t, i) { if (t.name === saved) { chosen = i; } });
+          } catch (e) {}
+          this._tileLayers = sets.map(function (t) { return makeLayer(t.url); });
+          this.selectedLayer = this._tileLayers[chosen];
+          if (this._controllers.tileLayers) {
+            this.removeControl(this._controllers.tileLayers);
+          }
+          this._controllers.tileLayers = new TileLayerSwitch({ position: 'bottomleft', sets: sets, active: chosen });
+          this._controllers.tileLayers.addTo(this);
+        } else {
+          let baseUrl = sets.length ? sets[0].url : this.config.baseTileURL
+          if (!sets.length && this._plainTiles && this.config.basePlainTileURL) {
             baseUrl = this.config.basePlainTileURL;
+          }
+          this.selectedLayer = makeLayer(baseUrl);
         }
-        this.selectedLayer = new MapTileLayer(
-          baseUrl + this.config.tileURLFormat, {
-          tileSize: this.config.tileSize || 256,
-          bounds: bounds,
-          minZoom: rsMinZoom,
-          maxZoom: rsMaxZoom,
-          maxNativeZoom: this.config.maxNativeZoom || 3,
-          mapID: mapId,
-          mapVersion: this._mapVersion,
-        });
         this.addLayer(this.selectedLayer);
         this.setMaxBounds(bounds);
+    },
+
+    // Let's RP: show tile set number i (from config.tileLayers) instead of the current one
+    setTileLayer: function(i) {
+        if (!this._tileLayers || !this._tileLayers[i] || this._tileLayers[i] === this.selectedLayer) {
+            return;
+        }
+        this.removeLayer(this.selectedLayer);
+        this.selectedLayer = this._tileLayers[i];
+        this.addLayer(this.selectedLayer);
+        this.selectedLayer.bringToBack();
+        try {
+            window.localStorage.setItem('kartographer-tile-layer', this.config.tileLayers[i].name);
+        } catch (e) {}
     },
 
     _translateBounds: function(bounds){
@@ -1142,7 +1217,8 @@ KartographerMap = KartographerMap.extend({
         }
 
         // bottom left
-        if (this.fullscreen) {
+        // Let's RP: the map picker and the floor (plane) control only when turned on
+        if (this.fullscreen && this.config.mapSelect !== false) {
             this._controllers.mapSelect = new controls.MapSelect({
                 visible: true
             });
@@ -1152,7 +1228,7 @@ KartographerMap = KartographerMap.extend({
         });
 
         //bottom right
-        if (this.fullscreen) {
+        if (this.fullscreen && this.config.planes !== false) {
             this._controllers.plane = new controls.Plane({
                 visible: true
             });

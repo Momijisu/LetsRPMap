@@ -28,9 +28,10 @@ git checkout LetsRPMap && git merge weirdgloop/REL1_45
 
 * Maps use **GTA world coordinates**: one map unit is one metre, `x` runs east and `y`
   runs north, the same numbers players see in game.
-* The map pictures are an ordinary web-map tile set (256 px tiles, zoom 0 = the whole
-  map in one tile), used **unchanged**, in a folder on the wiki's own server (`/tiles/`).
-  No tile server or other service is needed.
+* The map pictures are ordinary web-map tile sets (256 px tiles, zoom 0 = the whole map
+  in one tile), used **unchanged**, in folders on the wiki's own server: `/tiles/atlas/`
+  and `/tiles/satellite/`. Every map has an **Atlas | Satellite** switch, and the reader's
+  choice is remembered. No tile server or other service is needed.
 * Four numbers, `transformation`, line the tiles up with GTA coordinates. Weird Gloop's
   version only takes tiles cut in RuneScape's own layout; this fork adds `transformation`,
   `worldBounds`, `minZoom` and `maxZoom` settings so it can use standard tile sets.
@@ -39,8 +40,9 @@ git checkout LetsRPMap && git merge weirdgloop/REL1_45
 
 ### The Let's RP tiles
 
-Road-map style JPEGs named `{z}_{x}_{y}.jpg` (e.g. `7_71_88.jpg`), zoom 0 to 7, all in one
-folder. Zoom 7 is about 1.6 pixels per metre.
+Two sets, Atlas (road map) and Satellite, both JPEGs named `{z}_{x}_{y}.jpg`
+(e.g. `7_71_88.jpg`), zoom 0 to 7, each set in its own folder. Zoom 7 is about 1.6 pixels
+per metre. Both sets must line up the same way (the same `transformation`).
 
 ### Calibration
 
@@ -71,8 +73,8 @@ coordinates written in articles.
 ## Installing on the wiki (no shell needed)
 
 1. Download this repository's `LetsRPMap` branch and upload it to `extensions/Kartographer/`.
-2. Upload the tile set, unchanged, to a `tiles/` folder next to `index.php`, plus
-   `tools/basemaps.json`.
+2. Upload the tile sets, unchanged, to `tiles/atlas/` and `tiles/satellite/` next to
+   `index.php`, plus `tools/basemaps.json` to `tiles/`.
 3. Add to `LocalSettings.php` (see `tools/LocalSettings.example.php` to change anything):
    ```php
    wfLoadExtension( 'Kartographer' );
@@ -113,5 +115,13 @@ Coordinates in the pin data are `[ x, y ]`. Pins, lines and areas use
 * Default settings point at the wiki's own `/tiles/` folder instead of RuneScape's map server.
 * New settings `transformation`, `worldBounds`, `minZoom` and `maxZoom` (`modules/box/Map.js`),
   so a standard tile set can be used with game coordinates. Without them it works as before.
+* `tileLayers`: several tile sets with an Atlas | Satellite switch on every map.
+* `planes` and `mapSelect` can turn off RuneScape's floor control and map picker; the
+  "External maps" button only shows when `standaloneURL` is set.
+* Pins: pictures ship with the extension (`images/pins/`), and pins without `mapID` or
+  `plane` show on the map they're drawn on.
+* Map buttons stay light with dark icons, and pop-up text stays dark, whatever the skin's
+  colours.
+* Static map previews use `transformation` too.
 * English messages and the map picker say Let's RP / Los Santos instead of RuneScape.
 * `tools/`: calibration-ready `basemaps.json`, settings example, and scripts for other tile layouts.

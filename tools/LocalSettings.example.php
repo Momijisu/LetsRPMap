@@ -5,8 +5,14 @@
 wfLoadExtension( 'Kartographer' );
 $wgKartographerMapServer = '';
 $wgKartographerDataConfig = [
-	'baseTileURL' => '/tiles/',                 // folder holding the tiles
-	'basePlainTileURL' => '/tiles/',
+	// The tile sets, each a folder of {z}_{x}_{y}.jpg files. With more than one,
+	// every map gets a switch (Atlas | Satellite); the first is the default.
+	'tileLayers' => [
+		[ 'name' => 'Atlas', 'url' => '/tiles/atlas/' ],
+		[ 'name' => 'Satellite', 'url' => '/tiles/satellite/' ],
+	],
+	'baseTileURL' => '/tiles/atlas/',           // used when tileLayers isn't set
+	'basePlainTileURL' => '/tiles/atlas/',
 	'tileURLFormat' => '{z}_{x}_{y}.jpg',       // the tile files' names
 	'baseMapsFile' => '/tiles/basemaps.json',   // the list of maps (tools/basemaps.json)
 	'wikiImageURL' => '/images/',
@@ -22,4 +28,7 @@ $wgKartographerDataConfig = [
 	'maxZoom' => 8,          // one step past the tiles, slightly enlarged
 	'maxNativeZoom' => 7,    // the most detailed zoom in the tile set
 	'tileSize' => 256,
+	'planes' => false,       // RuneScape's floor control: GTA has one level
+	'mapSelect' => false,    // the map picker: only useful with several maps
+	// 'standaloneURL' => '', // a separate map site: shows an "External maps" button
 ];
