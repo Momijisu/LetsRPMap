@@ -42,7 +42,7 @@ tiles/{mapID}/{z}/{plane}_{x}_{y}.png
 
 `tools/` makes them:
 
-* `stitch_xyz.py`: joins one zoom level of an ordinary web-map tile set (`{z}/{x}/{y}.png`)
+* `stitch_xyz.py`: joins one zoom level of an ordinary web-map tile set (`{z}/{x}/{y}.png` folders, or flat files like `7_71_88.jpg` with `--pattern "{z}_{y}_{x}.jpg"`)
   into one big picture.
 * `cut_tiles.py`: cuts a big picture into tiles in our layout and writes `basemaps.json`.
   It needs the GTA coordinates of the picture's four edges.
