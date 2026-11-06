@@ -443,15 +443,17 @@
 			"value": null
 		},
 		"KartographerDataConfig": {
-			"description": "RuneScape data config for Kartographer.",
+			"description": "Where the map tiles and the list of maps come from. Defaults for the Let's RP Wiki: tiles in a /tiles/ folder on the wiki's own server. See README.md.",
 			"value": {
-				"baseTileURL": "https://maps.runescape.wiki/osrs/",
-				"basePlainTileURL": "https://maps.runescape.wiki/osrs/",
-				"tileURLFormat": "rendered/{mapID}/{z}/{p}_{x}_{-y}.png",
-				"attribution": "<a href=\"https://weirdgloop.org/licensing/\" target=\"_blank\">License</a>",
-				"baseMapsFile": "https://maps.runescape.wiki/osrs/data/basemaps.json",
-				"wikiImageURL": "https://oldschool.runescape.wiki/images/",
-				"mapVersion": "2021-04-19_a"
+				"baseTileURL": "/tiles/",
+				"basePlainTileURL": "/tiles/",
+				"tileURLFormat": "{mapID}/{z}/{p}_{x}_{-y}.png",
+				"attribution": "Let's RP Wiki",
+				"baseMapsFile": "/tiles/basemaps.json",
+				"wikiImageURL": "/images/",
+				"mapVersion": "1",
+				"maxNativeZoom": 3,
+				"tileSize": 256
 			}
 		}
 	},

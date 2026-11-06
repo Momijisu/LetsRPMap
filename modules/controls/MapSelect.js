@@ -10,7 +10,7 @@ L.Control.extend({
   options: {
     position: 'bottomleft',
 
-    buttonText: 'RuneScape Surface', // The text set on the 'options' button.
+    buttonText: 'Los Santos', // The text set on the 'options' button.
     buttonTitle: 'Select Map', // The title set on the 'options' button.
   },
 
