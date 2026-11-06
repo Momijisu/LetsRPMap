@@ -246,3 +246,16 @@
 		color: #fff;
 	}
 }
+
+// Let's RP: the skin colours text inside pop-ups directly, so set it on everything
+// but links (which keep their blue) - pop-ups are white, so the text must be dark.
+.leaflet-container .leaflet-popup-content,
+.leaflet-container .leaflet-popup-content :not( a ) {
+	color: #202122;
+}
+
+// Text labels (shape "text"): white with a dark outline, readable on land and sea
+.leaflet-container .leaflet-vis-tooltip {
+	font-weight: 600;
+	text-shadow: 0 0 2px #000, 0 0 3px #000, 0 1px 2px #000;
+}
